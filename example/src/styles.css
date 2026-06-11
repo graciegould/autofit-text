@@ -1,0 +1,325 @@
+/* autofit-text · demo
+   Quiet, neutral styling — the fitted text is the show. */
+
+:root {
+  color-scheme: light;
+  --bg: #fafafa;
+  --fg: #1a1a1a;
+  --muted: #6b6b6b;
+  --border: #d9d9d9;
+  --card: #ffffff;
+  --accent: #c2255c;
+  --frame: #fbd9e9;
+  --sans: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--bg);
+}
+
+body {
+  margin: 0;
+  font-family: var(--sans);
+  color: var(--fg);
+  line-height: 1.55;
+}
+
+.page {
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 40px 24px 64px;
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+  min-height: calc(100vh - 104px);
+}
+
+code {
+  font-family: var(--mono);
+  font-size: 0.88em;
+  background: rgba(0, 0, 0, 0.05);
+  padding: 0.08em 0.3em;
+  border-radius: 4px;
+}
+
+/* ---------------- masthead ---------------- */
+
+.masthead {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  flex-wrap: wrap;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 12px;
+}
+
+.masthead h1 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+}
+
+.masthead-tag {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.masthead-install {
+  margin-left: auto;
+  font-size: 12px;
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 3px 10px;
+  color: var(--muted);
+}
+
+.drag-hint {
+  font-family: var(--mono);
+  color: var(--muted);
+}
+
+/* ---------------- sandbox ---------------- */
+
+.sandbox {
+  display: grid;
+  grid-template-columns: minmax(340px, 1fr) minmax(320px, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+
+@media (max-width: 800px) {
+  .sandbox {
+    grid-template-columns: 1fr;
+  }
+}
+
+.sandbox-editor-pane {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.sandbox-presets {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.preset {
+  font-family: var(--mono);
+  font-size: 12px;
+  background: var(--card);
+  color: var(--fg);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 4px 12px;
+  cursor: pointer;
+}
+
+.preset:hover {
+  border-color: var(--fg);
+}
+
+.preset:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.sandbox-editor {
+  width: 100%;
+  min-height: 230px;
+  resize: vertical;
+  background: #1e1e1e;
+  color: #e8e6e3;
+  caret-color: #e8e6e3;
+  font-family: var(--mono);
+  font-size: 13px;
+  line-height: 1.6;
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+.sandbox-editor:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.sandbox-error {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 12.5px;
+  color: var(--accent);
+  border: 1px solid currentColor;
+  border-radius: 6px;
+  padding: 8px 12px;
+  white-space: pre-wrap;
+}
+
+.sandbox-hint {
+  margin: 0;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.sandbox-stage-pane {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sandbox-stage-hint {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 11.5px;
+  color: var(--muted);
+}
+
+/* ---------------- the box ---------------- */
+
+.frame {
+  position: relative;
+  background: var(--frame);
+  color: var(--fg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-weight: 800;
+  line-height: 1.1;
+  overflow: hidden;
+  resize: both;
+  min-width: 80px;
+  min-height: 40px;
+  max-width: 100%;
+}
+
+/* ---------------- edge cases ---------------- */
+
+.edge-cases {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  border-top: 1px solid var(--border);
+  padding-top: 28px;
+}
+
+.edge-cases h2 {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 650;
+}
+
+.edge-cases-lede {
+  margin: 0 0 16px;
+  font-size: 13.5px;
+  color: var(--muted);
+  max-width: 64ch;
+}
+
+.demo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+  gap: 18px;
+  align-items: start;
+}
+
+.demo {
+  margin: 0;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--card);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.demo-label {
+  font-family: var(--mono);
+  font-size: 11.5px;
+  color: var(--muted);
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.demo-stage {
+  padding: 18px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  min-height: 110px;
+}
+
+.demo-note {
+  margin: 0;
+  padding: 10px 12px;
+  font-size: 12.5px;
+  color: var(--muted);
+  border-top: 1px solid var(--border);
+}
+
+.snippet {
+  margin: 0;
+  padding: 10px 12px;
+  background: #f3f3f3;
+  border-top: 1px solid var(--border);
+  font-family: var(--mono);
+  font-size: 12px;
+  line-height: 1.55;
+  overflow-x: auto;
+}
+
+.snippet code {
+  background: none;
+  padding: 0;
+  font-size: inherit;
+}
+
+/* demo boxes — center fitted text; fill mode is absolutely pinned anyway */
+
+.box {
+  font-weight: 800;
+  line-height: 1.1;
+  color: var(--fg);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  overflow: hidden;
+  max-width: 100%;
+  position: relative;
+}
+
+.box,
+.fit-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.box--padded {
+  padding: 24px;
+  background:
+    linear-gradient(var(--bg), var(--bg)) content-box,
+    repeating-linear-gradient(45deg, #ececec 0 6px, var(--bg) 6px 12px);
+}
+
+.box--bad {
+  border: 1px dashed var(--accent);
+}
+
+/* ---------------- colophon ---------------- */
+
+.colophon {
+  border-top: 1px solid var(--border);
+  padding-top: 14px;
+  margin-top: auto;
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--muted);
+}

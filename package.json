@@ -1,0 +1,72 @@
+{
+  "name": "autofit-text",
+  "version": "0.1.0",
+  "description": "Auto-fit text to any container. A React component and hook that scales or stretches text to fill its box.",
+  "license": "MIT",
+  "author": "Gracie Gould",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/graciegould/autofit-text.git"
+  },
+  "homepage": "https://github.com/graciegould/autofit-text#readme",
+  "bugs": {
+    "url": "https://github.com/graciegould/autofit-text/issues"
+  },
+  "keywords": [
+    "react",
+    "text",
+    "autofit",
+    "fit-text",
+    "textfit",
+    "fit",
+    "autosize",
+    "scale",
+    "responsive",
+    "typography"
+  ],
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "sideEffects": false,
+  "engines": {
+    "node": ">=16"
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "example": "npm --prefix example run dev",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm run build"
+  },
+  "peerDependencies": {
+    "react": ">=17"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": false
+    }
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.0",
+    "happy-dom": "^14.12.3",
+    "react": "^18.2.0",
+    "tsup": "^8.0.0",
+    "typescript": "^5.4.0",
+    "vitest": "^1.6.1"
+  }
+}
