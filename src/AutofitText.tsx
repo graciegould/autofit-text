@@ -1,4 +1,5 @@
 import {
+  Fragment,
   forwardRef,
   useCallback,
   useRef,
@@ -6,6 +7,7 @@ import {
   type ElementType,
   type MutableRefObject,
 } from 'react';
+import { WORD_ATTRIBUTE } from './internals';
 import type { AutofitTextProps } from './types';
 import { useAutofitText } from './useAutofitText';
 
@@ -54,6 +56,23 @@ export const AutofitText = forwardRef<HTMLDivElement, AutofitTextProps>(function
 
   const Tag = as as ElementType;
 
+  // wrap.justify scales each word's line separately, so plain-string
+  // children are split into marked per-word spans (spaces kept between them
+  // so the text still reads as one line when it isn't wrapping).
+  const justify = typeof wrap === 'object' && wrap !== null && wrap.justify === true;
+  const content =
+    justify && typeof children === 'string'
+      ? children
+          .trim()
+          .split(/\s+/)
+          .map((word, i) => (
+            <Fragment key={i}>
+              {i > 0 && ' '}
+              <span {...{ [WORD_ATTRIBUTE]: '' }}>{word}</span>
+            </Fragment>
+          ))
+      : children;
+
   const containerStyle: CSSProperties = {
     width: '100%',
     height: '100%',
@@ -74,7 +93,7 @@ export const AutofitText = forwardRef<HTMLDivElement, AutofitTextProps>(function
 
   return (
     <div ref={setRefs} style={containerStyle} className={className}>
-      <Tag ref={textRef}>{children}</Tag>
+      <Tag ref={textRef}>{content}</Tag>
     </div>
   );
 });

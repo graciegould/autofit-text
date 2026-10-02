@@ -19,7 +19,9 @@ import {
   getFontSizePx,
   getModeWarnings,
   getParentDimension,
+  getWordElements,
   resolveDimension,
+  resetWordElements,
   resolveWrap,
   restoreInlineStyle,
   restoreInlineStyles,
@@ -67,6 +69,7 @@ export function useAutofitText(
   const wrapBelowHeight = wrap && typeof wrap === 'object' ? wrap.belowHeight : undefined;
   const wrapBelowAspect = wrap && typeof wrap === 'object' ? wrap.belowAspect : undefined;
   const wrapOn = wrap && typeof wrap === 'object' ? wrap.on : undefined;
+  const wrapJustify = wrap && typeof wrap === 'object' ? wrap.justify === true : false;
 
   // Hold the latest scheduleFit so the imperative handle can call it
   // even after the effect has re-run.
@@ -167,6 +170,20 @@ export function useAutofitText(
         const { breakWord, on } = resolveWrap(wrapInput, parentWidth, parentHeight);
         applyWrapStyles(textElement, breakWord, on, initialStyles);
 
+        // Justified each-word lines: every word element becomes its own
+        // block line, later scaled to the widest one. Reset first so a
+        // previous pass's scale never pollutes this pass's measurements.
+        const wordElements = getWordElements(textElement);
+        const justifyLines =
+          wrapJustify && breakWord && on === 'each-word' && wordElements.length > 1;
+        resetWordElements(wordElements);
+        if (justifyLines) {
+          for (const word of wordElements) {
+            word.style.display = 'block';
+            word.style.width = 'max-content';
+          }
+        }
+
         let padTop = 0;
         let padLeft = 0;
         if (positioned) {
@@ -236,13 +253,32 @@ export function useAutofitText(
 
         /* ----- 4. Place and scale ----- */
 
+        if (justifyLines) {
+          // Transforms don't affect layout, so the widths are the unscaled
+          // line widths and the element keeps the widest line's width.
+          const widths = wordElements.map((word) => word.offsetWidth);
+          const widest = Math.max(...widths, 1);
+          wordElements.forEach((word, i) => {
+            const lineScale = widest / Math.max(widths[i], 1);
+            if (lineScale > 1 + 1e-3) {
+              word.style.transformOrigin = '0 0';
+              word.style.transform = `scaleX(${lineScale})`;
+            }
+          });
+        }
+
         let scaleX = 1;
         let scaleY = 1;
         if (positioned) {
           const currentWidth = Math.max(textElement.scrollWidth, 1);
-          // offsetHeight, not scrollHeight: only the former reflects
-          // text-box-trim, and the scale must map the trimmed box.
-          const currentHeight = Math.max(textElement.offsetHeight, 1);
+          // Border-box height, not scrollHeight: only the former reflects
+          // text-box-trim, and the scale must map the trimmed box. Use the
+          // fractional rect height (no transform is applied at this point):
+          // offsetHeight rounds, which can overshoot the box by ~1px.
+          const currentHeight = Math.max(
+            textElement.getBoundingClientRect().height || textElement.offsetHeight,
+            1
+          );
           scaleX = stretchX ? widthConstraint / currentWidth : 1;
           scaleY = stretchY && hasFiniteHeight ? heightConstraint / currentHeight : 1;
           // Non-stretched axes align within the parent's content box — the
@@ -310,6 +346,7 @@ export function useAutofitText(
       cleanupFns.forEach((fn) => fn());
       scheduleRef.current = null;
       restoreInlineStyles(textElement, initialStyles);
+      resetWordElements(getWordElements(textElement));
       parentElement.style.position = initialParentPosition;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -321,6 +358,7 @@ export function useAutofitText(
     wrapBelowHeight,
     wrapBelowAspect,
     wrapOn,
+    wrapJustify,
     stretchX,
     stretchY,
     alignX,

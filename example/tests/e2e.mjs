@@ -172,6 +172,45 @@ async function run() {
     }
   }
 
+  // 5d. wrap.justify stretches every each-word line to the full width.
+  {
+    const cases = [
+      ['justify + fill: every word spans the box', `mode="fill" wrap={{ on: 'each-word', justify: true }}`, 317, 265, 'fill'],
+      ['justify + fit: every word as wide as the widest', `wrap={{ on: 'each-word', justify: true }}`, 317, 265, 'fit'],
+    ];
+    for (const [label, props, w, h, kind] of cases) {
+      await editor.fill(`<AutofitText ${props}>SOFTWARE DEVELOPMENT</AutofitText>`);
+      const prev = await page.locator('.frame').evaluate((el, [w, h]) => {
+        const was = { w: el.style.width, h: el.style.height };
+        el.style.whiteSpace = 'nowrap';
+        el.style.width = `${w}px`;
+        el.style.height = `${h}px`;
+        return was;
+      }, [w, h]);
+      await settle(page);
+      const m = await page.locator('.frame > *').first().evaluate((box) => {
+        const c = box.getBoundingClientRect();
+        const words = [...box.querySelectorAll('[data-autofit-word]')].map((s) => s.getBoundingClientRect());
+        return {
+          boxW: c.width,
+          tops: new Set(words.map((r) => Math.round(r.top))).size,
+          widths: words.map((r) => r.width),
+          inside: words.every((r) => r.left >= c.left - 1 && r.right <= c.right + 1 && r.top >= c.top - 1 && r.bottom <= c.bottom + 1),
+        };
+      });
+      const max = Math.max(...m.widths);
+      const even = m.widths.every((x) => Math.abs(x - max) <= 1);
+      const full = kind !== 'fill' || Math.abs(max - m.boxW) <= 1;
+      record(label, m.widths.length === 2 && m.tops === 2 && even && full && m.inside,
+        `words=${m.widths.length} lines=${m.tops} widths=${m.widths.map((x) => x.toFixed(1)).join('/')} box=${m.boxW.toFixed(1)} inside=${m.inside}`);
+      await page.locator('.frame').evaluate((el, was) => {
+        el.style.whiteSpace = '';
+        el.style.width = was.w;
+        el.style.height = was.h;
+      }, prev);
+    }
+  }
+
   // 6. Resizing the box refits the text
   await presets.filter({ hasText: /^fill$/ }).click();
   await settle(page);

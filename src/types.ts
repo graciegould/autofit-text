@@ -42,6 +42,14 @@ export type WrapOption =
        * - `'each-word'`: every word on its own line
        */
       on?: WrapOn;
+      /**
+       * With `on: 'each-word'`, stretch every line horizontally to the width
+       * of the widest one, so each word spans the full box instead of only
+       * the longest. `<AutofitText>` does this automatically for plain-string
+       * children; with the hook, wrap each word in an element marked
+       * `data-autofit-word` (direct children of the text element).
+       */
+      justify?: boolean;
     };
 
 export interface AutofitInfo {

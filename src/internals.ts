@@ -244,6 +244,30 @@ const MANAGED_STYLE_PROPS = [
 
 export type StyleSnapshot = Partial<Record<(typeof MANAGED_STYLE_PROPS)[number], string>>;
 
+/* ------------------------------------------------------------------ */
+/* Justified word lines                                                */
+/* ------------------------------------------------------------------ */
+
+/** Attribute marking the per-word elements that `wrap.justify` scales. */
+export const WORD_ATTRIBUTE = 'data-autofit-word';
+
+/** The text element's direct children marked as words, in order. */
+export function getWordElements(element: HTMLElement): HTMLElement[] {
+  return Array.from(element.children).filter(
+    (child): child is HTMLElement =>
+      child instanceof HTMLElement && child.hasAttribute(WORD_ATTRIBUTE)
+  );
+}
+
+/** Undo the per-line layout/scale applied for `wrap.justify`. */
+export function resetWordElements(words: HTMLElement[]): void {
+  for (const word of words) {
+    for (const prop of ['display', 'width', 'transform', 'transform-origin']) {
+      word.style.removeProperty(prop);
+    }
+  }
+}
+
 /** Snapshot the element's own inline values for every property the fit may touch. */
 export function captureInlineStyles(element: HTMLElement): StyleSnapshot {
   const snapshot: StyleSnapshot = {};

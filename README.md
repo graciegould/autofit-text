@@ -72,10 +72,11 @@ In `fit` mode the hook normally leaves positioning to your CSS; passing either a
 
 - `false` (default) — single line, fitted
 - `true` — always wrap, breaking anywhere
-- `{ belowWidth?, belowHeight?, belowAspect?, on? }` — wrap once the container is at or below any threshold: `belowWidth` / `belowHeight` in px, `belowAspect` as width ÷ height (e.g. `1.3` wraps once the box is less than 1.3× as wide as tall; needs a definite height). Omit all thresholds to always wrap.
+- `{ belowWidth?, belowHeight?, belowAspect?, on?, justify? }` — wrap once the container is at or below any threshold: `belowWidth` / `belowHeight` in px, `belowAspect` as width ÷ height (e.g. `1.3` wraps once the box is less than 1.3× as wide as tall; needs a definite height). Omit all thresholds to always wrap.
   - `on: 'char'` (default) breaks anywhere.
   - `on: 'word'` keeps words whole — an unbreakable word shrinks the font rather than splitting.
   - `on: 'each-word'` puts every word on its own line.
+  - `justify: true` (with `on: 'each-word'`) stretches each line horizontally to match the widest, so every word spans the full box — e.g. SOFTWARE over DEVELOPMENT, both edge to edge. `<AutofitText>` splits plain-string children automatically; with the hook, wrap each word in a direct child marked `data-autofit-word`.
 
 ## Sizing constraints
 
