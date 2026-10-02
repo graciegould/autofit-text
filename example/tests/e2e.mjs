@@ -234,7 +234,7 @@ async function run() {
   // 7. Edge-case demos render
   {
     const count = await page.locator('.edge-cases .demo').count();
-    record('edge-case demos render', count === 6, `found=${count}`);
+    record('edge-case demos render', count === 9, `found=${count}`);
     const inset = await page
       .locator('.box--padded')
       .evaluate((el) => el.textContent?.trim() ?? '');

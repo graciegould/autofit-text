@@ -133,10 +133,8 @@ export function useAutofitText(
     let animationFrame: number | null = null;
     const cleanupFns: Array<() => void> = [];
 
-    const scheduleFit = () => {
-      if (animationFrame !== null) cancelAnimationFrame(animationFrame);
-      animationFrame = window.requestAnimationFrame(() => {
-        animationFrame = null;
+    const fit = () => {
+      {
 
         /* ----- 1. Measure the container and resolve constraints ----- */
 
@@ -218,6 +216,11 @@ export function useAutofitText(
           textElement.style.lineHeight = '1';
           textElement.style.setProperty('text-box-trim', 'trim-both');
           textElement.style.setProperty('text-box-edge', 'cap alphabetic');
+          // Drop the previous pass's scale before measuring: the height
+          // below is read from getBoundingClientRect, which includes
+          // transforms. Leaving it on made scaleY alternate between the
+          // right value and ~1 on every refit (visible jitter on resize).
+          textElement.style.transform = 'none';
         } else {
           const relativeSpacing = computeRelativeLetterSpacing(textElement);
           if (relativeSpacing) textElement.style.letterSpacing = relativeSpacing;
@@ -325,7 +328,34 @@ export function useAutofitText(
         }
 
         onFitRef.current?.({ fontSize: result.fontSize, scaleX, scaleY, fits: result.fits });
+      }
+    };
+
+    const scheduleFit = () => {
+      if (animationFrame !== null) cancelAnimationFrame(animationFrame);
+      animationFrame = window.requestAnimationFrame(() => {
+        animationFrame = null;
+        fit();
       });
+    };
+
+    // Resizes refit synchronously: ResizeObserver callbacks run after layout
+    // and before paint, so the text is fitted in the same frame the box
+    // changes size. Deferring to the next frame (as scheduleFit does) left
+    // the text one frame stale on every step of a window drag or an animated
+    // box, which read as jitter. Only when the text is positioned (absolute,
+    // out of flow): then fitting can never resize the observed parent, so
+    // there is no resize loop. In-flow text keeps the deferred refit.
+    const fitNow = () => {
+      if (!positioned) {
+        scheduleFit();
+        return;
+      }
+      if (animationFrame !== null) {
+        cancelAnimationFrame(animationFrame);
+        animationFrame = null;
+      }
+      fit();
     };
 
     scheduleRef.current = scheduleFit;
@@ -333,7 +363,7 @@ export function useAutofitText(
     /* ----- Observers: refit on resize, content change, and font load ----- */
 
     if (typeof ResizeObserver !== 'undefined') {
-      const resizeObserver = new ResizeObserver(scheduleFit);
+      const resizeObserver = new ResizeObserver(fitNow);
       resizeObserver.observe(parentElement);
       cleanupFns.push(() => resizeObserver.disconnect());
     } else {
