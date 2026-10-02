@@ -262,7 +262,7 @@ export function getWordElements(element: HTMLElement): HTMLElement[] {
 /** Undo the per-line layout/scale applied for `wrap.justify`. */
 export function resetWordElements(words: HTMLElement[]): void {
   for (const word of words) {
-    for (const prop of ['display', 'width', 'transform', 'transform-origin']) {
+    for (const prop of ['display', 'width', 'transform', 'transform-origin', 'text-box']) {
       word.style.removeProperty(prop);
     }
   }

@@ -175,7 +175,7 @@ async function run() {
   // 5d. wrap.justify stretches every each-word line to the full width.
   {
     const cases = [
-      ['justify + fill: every word spans the box', `mode="fill" wrap={{ on: 'each-word', justify: true }}`, 317, 265, 'fill'],
+      ['justify + fill: every word spans the box, stack fills the height', `mode="fill" wrap={{ on: 'each-word', justify: true }}`, 317, 265, 'fill'],
       ['justify + fit: every word as wide as the widest', `wrap={{ on: 'each-word', justify: true }}`, 317, 265, 'fit'],
     ];
     for (const [label, props, w, h, kind] of cases) {
@@ -193,6 +193,8 @@ async function run() {
         const words = [...box.querySelectorAll('[data-autofit-word]')].map((s) => s.getBoundingClientRect());
         return {
           boxW: c.width,
+          // fill: the stacked words must cover the whole height, no gap.
+          coverY: words.length ? Math.max(Math.abs(words[0].top - c.top), Math.abs(words[words.length - 1].bottom - c.bottom), Math.abs(words.reduce((a, r) => a + r.height, 0) - c.height)) : 99,
           tops: new Set(words.map((r) => Math.round(r.top))).size,
           widths: words.map((r) => r.width),
           inside: words.every((r) => r.left >= c.left - 1 && r.right <= c.right + 1 && r.top >= c.top - 1 && r.bottom <= c.bottom + 1),
@@ -200,9 +202,9 @@ async function run() {
       });
       const max = Math.max(...m.widths);
       const even = m.widths.every((x) => Math.abs(x - max) <= 1);
-      const full = kind !== 'fill' || Math.abs(max - m.boxW) <= 1;
+      const full = kind !== 'fill' || (Math.abs(max - m.boxW) <= 1 && m.coverY <= 1.5);
       record(label, m.widths.length === 2 && m.tops === 2 && even && full && m.inside,
-        `words=${m.widths.length} lines=${m.tops} widths=${m.widths.map((x) => x.toFixed(1)).join('/')} box=${m.boxW.toFixed(1)} inside=${m.inside}`);
+        `words=${m.widths.length} lines=${m.tops} widths=${m.widths.map((x) => x.toFixed(1)).join('/')} box=${m.boxW.toFixed(1)} coverY=${m.coverY.toFixed(2)} inside=${m.inside}`);
       await page.locator('.frame').evaluate((el, was) => {
         el.style.whiteSpace = '';
         el.style.width = was.w;

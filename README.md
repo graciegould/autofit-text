@@ -76,7 +76,7 @@ In `fit` mode the hook normally leaves positioning to your CSS; passing either a
   - `on: 'char'` (default) breaks anywhere.
   - `on: 'word'` keeps words whole — an unbreakable word shrinks the font rather than splitting.
   - `on: 'each-word'` puts every word on its own line.
-  - `justify: true` (with `on: 'each-word'`) stretches each line horizontally to match the widest, so every word spans the full box — e.g. SOFTWARE over DEVELOPMENT, both edge to edge. `<AutofitText>` splits plain-string children automatically; with the hook, wrap each word in a direct child marked `data-autofit-word`.
+  - `justify: true` (with `on: 'each-word'`) stretches each line horizontally to match the widest, so every word spans the full box — e.g. SOFTWARE over DEVELOPMENT, both edge to edge. In `mode="fill"` the stacked lines also split the box height evenly, so the stack covers the whole box with no gaps between lines. `<AutofitText>` splits plain-string children automatically; with the hook, wrap each word in a direct child marked `data-autofit-word`.
 
 ## Sizing constraints
 

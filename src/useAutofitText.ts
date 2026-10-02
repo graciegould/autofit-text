@@ -269,7 +269,34 @@ export function useAutofitText(
 
         let scaleX = 1;
         let scaleY = 1;
-        if (positioned) {
+        // fill + justify: every word line is its own fill — full width and an
+        // equal share of the height — so the stack covers the whole box with
+        // no inter-line gap. Each word trims to the text-box edges the text
+        // element uses, then is moved into its slot and scaled to fill it.
+        const fillLines = justifyLines && stretchX && stretchY && hasFiniteHeight && positioned;
+        if (fillLines) {
+          for (const word of wordElements) {
+            word.style.removeProperty('transform');
+            word.style.setProperty('text-box', 'inherit');
+          }
+          const slot = heightConstraint / wordElements.length;
+          const boxes = wordElements.map((word) => {
+            const rect = word.getBoundingClientRect();
+            return {
+              width: rect.width || word.offsetWidth,
+              height: rect.height || word.offsetHeight,
+              top: word.offsetTop,
+            };
+          });
+          wordElements.forEach((word, i) => {
+            const { width, height, top } = boxes[i];
+            const sx = widthConstraint / Math.max(width, 1);
+            const sy = slot / Math.max(height, 1);
+            word.style.transformOrigin = '0 0';
+            word.style.transform = `translateY(${i * slot - top}px) scale(${sx}, ${sy})`;
+          });
+          textElement.style.transform = 'none';
+        } else if (positioned) {
           const currentWidth = Math.max(textElement.scrollWidth, 1);
           // Border-box height, not scrollHeight: only the former reflects
           // text-box-trim, and the scale must map the trimmed box. Use the
