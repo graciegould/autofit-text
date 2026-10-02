@@ -17,7 +17,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
           registry-url: https://registry.npmjs.org
 
@@ -30,11 +30,17 @@ jobs:
             exit 1
           fi
 
+      # npm 11.21+ is needed for `npm stage publish`
+      - run: npm install -g npm@^11.21.0
       - run: npm ci
       - run: npm run typecheck
       - run: npm test
 
-      # prepublishOnly runs the build
-      - run: npm publish --provenance --access public
+      - run: npm run build
+
+      # The npm token is staging-only: this uploads the version to npm's
+      # staging area. It goes live after a maintainer approves it with 2FA
+      # (npmjs.com, or `npm stage list autofit-text` + `npm stage approve <id>`).
+      - run: npm stage publish --provenance --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
