@@ -1,6 +1,6 @@
 {
   "name": "autofit-text",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Auto-fit text to any container. A React component and hook that scales or stretches text to fill its box.",
   "license": "MIT",
   "author": "Gracie Gould",
