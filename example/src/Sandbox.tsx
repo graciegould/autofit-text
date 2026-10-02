@@ -69,6 +69,30 @@ const PRESETS: Array<{ name: string; code: string }> = [
 </AutofitText>`,
   },
   {
+    name: 'wrap when narrow',
+    code: `// drag the box narrower than 400px to wrap
+<AutofitText wrap={{ belowWidth: 400, on: 'word' }}>
+  WRAP ONLY WHEN NARROW
+</AutofitText>`,
+  },
+  {
+    name: 'stack each word',
+    code: `// drag the box taller than it is wide-ish (< 1.3 : 1)
+<AutofitText mode="fill" wrap={{ belowAspect: 1.3, on: 'each-word' }}>
+  GRACIE GOULD
+</AutofitText>`,
+  },
+  {
+    name: 'stack + justify',
+    code: `// every word spans the full width; the stack fills the height
+<AutofitText
+  mode="fill"
+  wrap={{ belowAspect: 1.3, on: 'each-word', justify: true }}
+>
+  SOFTWARE DEVELOPMENT
+</AutofitText>`,
+  },
+  {
     name: 'fill-width',
     code: `<AutofitText mode="fill-width" maxFontSize={48} alignY="bottom">
   LOWER THIRD
@@ -146,7 +170,9 @@ export function Sandbox() {
         <p className="sandbox-hint">
           In scope: <code>{'<AutofitText>'}</code>, <code>useAutofitText</code>, <code>React</code>.
           Props: <code>mode</code> (<code>fit · fill · fill-width · fill-height</code>),{' '}
-          <code>wrap</code>, <code>alignX</code>/<code>alignY</code>, <code>minFontSize</code>/
+          <code>wrap</code> (<code>true</code> or{' '}
+          <code>{'{ belowWidth, belowHeight, belowAspect, on, justify }'}</code>, <code>on</code>:{' '}
+          <code>char · word · each-word</code>), <code>alignX</code>/<code>alignY</code>, <code>minFontSize</code>/
           <code>maxFontSize</code>, <code>maxWidth</code>/<code>maxHeight</code>, <code>onFit</code>,{' '}
           <code>enabled</code>, <code>as</code>.
         </p>

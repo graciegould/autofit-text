@@ -91,7 +91,7 @@ In `fit` mode the hook normally leaves positioning to your CSS; passing either a
 | `mode` | `'fit' \| 'fill' \| 'fill-width' \| 'fill-height'` | `'fit'` |
 | `alignX` | `'left' \| 'center' \| 'right'` | `'center'` |
 | `alignY` | `'top' \| 'center' \| 'bottom'` | `'center'` |
-| `wrap` | `boolean \| { belowWidth?, belowHeight?, belowAspect?, on? }` | `false` |
+| `wrap` | `boolean \| { belowWidth?, belowHeight?, belowAspect?, on?, justify? }` | `false` |
 | `maxWidth` / `maxHeight` | `number \| string` | — |
 | `minFontSize` / `maxFontSize` | `number \| string` | — |
 | `onFit` | `(info: AutofitInfo) => void` | — |

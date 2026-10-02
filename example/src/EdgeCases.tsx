@@ -1,5 +1,18 @@
-import type { ReactNode } from 'react';
-import { AutofitText } from 'autofit-text';
+import { useRef, type ReactNode } from 'react';
+import { AutofitText, useAutofitText } from 'autofit-text';
+
+function HookStack() {
+  const box = useRef<HTMLDivElement>(null);
+  const text = useRef<HTMLDivElement>(null);
+  useAutofitText(text, box, { mode: 'fill', wrap: { on: 'each-word', justify: true } });
+  return (
+    <div ref={box} className="box" style={{ width: 200, height: 160 }}>
+      <div ref={text}>
+        <span data-autofit-word>HOOK</span> <span data-autofit-word>STACKED</span>
+      </div>
+    </div>
+  );
+}
 
 function Demo({
   label,
@@ -59,6 +72,48 @@ export function EdgeCases() {
               INCOMPREHENSIBILITIES
             </AutofitText>
           </div>
+        </Demo>
+
+        <Demo
+          label="wrap inside a nowrap parent"
+          note="An inherited white-space: nowrap no longer cancels wrap — the fit sets its own white-space."
+          snippet={`<div style={{ whiteSpace: 'nowrap' }}>
+  <AutofitText wrap={{ on: 'word' }}>STILL WRAPS HERE</AutofitText>
+</div>`}
+        >
+          <div className="box" style={{ width: 200, height: 130, whiteSpace: 'nowrap' }}>
+            <AutofitText wrap={{ on: 'word' }} className="fit-center">
+              STILL WRAPS HERE
+            </AutofitText>
+          </div>
+        </Demo>
+
+        <Demo
+          label="each-word + justify in a tall box"
+          note="Every word gets its own line and spans the full width; in fill mode the lines split the height evenly."
+          snippet={`<AutofitText mode="fill" wrap={{ on: 'each-word', justify: true }}>
+  SOFTWARE DEVELOPMENT
+</AutofitText>`}
+        >
+          <div className="box" style={{ width: 200, height: 160 }}>
+            <AutofitText mode="fill" wrap={{ on: 'each-word', justify: true }}>
+              SOFTWARE DEVELOPMENT
+            </AutofitText>
+          </div>
+        </Demo>
+
+        <Demo
+          label="hook + data-autofit-word"
+          note="With useAutofitText, mark each word's element with data-autofit-word for each-word / justify."
+          snippet={`useAutofitText(textRef, boxRef, {
+  mode: 'fill',
+  wrap: { on: 'each-word', justify: true },
+});
+<div ref={textRef}>
+  <span data-autofit-word>HOOK</span> <span data-autofit-word>STACKED</span>
+</div>`}
+        >
+          <HookStack />
         </Demo>
 
         <Demo
