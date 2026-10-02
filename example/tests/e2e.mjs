@@ -103,6 +103,35 @@ async function run() {
     record('fill-width stretches horizontally', /scale\(/.test(m.transform), m.transform || '(empty)');
   }
 
+  // 5b. wrap still breaks lines when the surrounding CSS says nowrap
+  //     (regression: restoring `text-wrap` wiped the `text-wrap-mode` that
+  //     `white-space: normal` set, so an inherited nowrap won).
+  for (const mode of ['fit', 'fill']) {
+    await editor.fill(
+      `<AutofitText mode="${mode}" wrap={{ on: 'word' }}>SOFTWARE DEVELOPMENT</AutofitText>`
+    );
+    const prev = await page.locator('.frame').evaluate((el) => {
+      const was = { w: el.style.width, h: el.style.height };
+      el.style.whiteSpace = 'nowrap';
+      el.style.width = '304px';
+      el.style.height = '249px';
+      return was;
+    });
+    await settle(page);
+    const lines = await page.locator('.frame > * > *').first().evaluate((el) => {
+      const range = document.createRange();
+      range.selectNodeContents(el);
+      const tops = new Set([...range.getClientRects()].map((r) => Math.round(r.top)));
+      return tops.size;
+    });
+    record(`${mode} + wrap breaks lines under inherited nowrap`, lines > 1, `lines=${lines}`);
+    await page.locator('.frame').evaluate((el, was) => {
+      el.style.whiteSpace = '';
+      el.style.width = was.w;
+      el.style.height = was.h;
+    }, prev);
+  }
+
   // 6. Resizing the box refits the text
   await presets.filter({ hasText: /^fill$/ }).click();
   await settle(page);

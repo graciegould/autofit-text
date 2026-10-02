@@ -193,6 +193,11 @@ export function applyWrapStyles(
     restoreInlineStyle(element, initial, 'width');
     restoreInlineStyle(element, initial, 'hyphens');
     restoreInlineStyle(element, initial, 'text-wrap');
+    // `white-space` and `text-wrap` are both shorthands for `text-wrap-mode`,
+    // so restoring `text-wrap` above wipes the `wrap` that `white-space:
+    // normal` just set — letting an inherited or class `white-space: nowrap`
+    // win and silently disabling wrap. Pin the longhand last.
+    element.style.setProperty('text-wrap-mode', 'wrap');
   } else {
     element.style.wordBreak = 'keep-all';
     element.style.overflowWrap = 'normal';
@@ -219,6 +224,7 @@ const MANAGED_STYLE_PROPS = [
   'overflow-wrap',
   'hyphens',
   'text-wrap',
+  'text-wrap-mode',
   'text-box-trim',
   'text-box-edge',
   'text-align',
