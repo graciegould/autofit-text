@@ -65,6 +65,7 @@ export function useAutofitText(
   const wrapBool = typeof wrap === 'boolean' ? wrap : null;
   const wrapBelowWidth = wrap && typeof wrap === 'object' ? wrap.belowWidth : undefined;
   const wrapBelowHeight = wrap && typeof wrap === 'object' ? wrap.belowHeight : undefined;
+  const wrapBelowAspect = wrap && typeof wrap === 'object' ? wrap.belowAspect : undefined;
   const wrapOn = wrap && typeof wrap === 'object' ? wrap.on : undefined;
 
   // Hold the latest scheduleFit so the imperative handle can call it
@@ -157,7 +158,12 @@ export function useAutofitText(
         const wrapInput: WrapOption =
           wrapBool !== null
             ? wrapBool
-            : { belowWidth: wrapBelowWidth, belowHeight: wrapBelowHeight, on: wrapOn };
+            : {
+                belowWidth: wrapBelowWidth,
+                belowHeight: wrapBelowHeight,
+                belowAspect: wrapBelowAspect,
+                on: wrapOn,
+              };
         const { breakWord, on } = resolveWrap(wrapInput, parentWidth, parentHeight);
         applyWrapStyles(textElement, breakWord, on, initialStyles);
 
@@ -179,6 +185,9 @@ export function useAutofitText(
           textElement.style.removeProperty('min-width');
           // Wrapped lines should follow the horizontal alignment too.
           if (effAlignX) textElement.style.textAlign = effAlignX;
+        } else if (breakWord && on === 'each-word') {
+          // A min-width floor would pull short words back onto one line.
+          textElement.style.removeProperty('min-width');
         } else {
           textElement.style.minWidth = '50%';
         }
@@ -218,8 +227,7 @@ export function useAutofitText(
         const enforceWidth = !stretchX || stretchY || !hasFiniteHeight;
         const enforceHeight = hasFiniteHeight && (!stretchY || stretchX);
         const fits = () => {
-          const widthFits =
-            !enforceWidth || textElement.scrollWidth <= widthConstraint + EPSILON;
+          const widthFits = !enforceWidth || textElement.scrollWidth <= widthConstraint + EPSILON;
           const heightFits =
             !enforceHeight || textElement.scrollHeight <= heightConstraint + EPSILON;
           return widthFits && heightFits;
@@ -311,6 +319,7 @@ export function useAutofitText(
     wrapBool,
     wrapBelowWidth,
     wrapBelowHeight,
+    wrapBelowAspect,
     wrapOn,
     stretchX,
     stretchY,

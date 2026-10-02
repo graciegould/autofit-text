@@ -1,4 +1,4 @@
-import type { AlignX, AlignY, AutofitDimension, WrapOption } from './types';
+import type { AlignX, AlignY, AutofitDimension, WrapOn, WrapOption } from './types';
 
 /** Hard ceiling for the font-size search when no `maxFontSize` is given. */
 export const MAX_FONT_SIZE_DEFAULT = 16384;
@@ -119,8 +119,7 @@ export function getParentDimension(
 ): number | undefined {
   const computed = window.getComputedStyle(element);
   const padStart = parseFloat(axis === 'width' ? computed.paddingLeft : computed.paddingTop) || 0;
-  const padEnd =
-    parseFloat(axis === 'width' ? computed.paddingRight : computed.paddingBottom) || 0;
+  const padEnd = parseFloat(axis === 'width' ? computed.paddingRight : computed.paddingBottom) || 0;
 
   const client = axis === 'width' ? element.clientWidth : element.clientHeight;
   if (client > 0) {
@@ -150,17 +149,20 @@ export function resolveWrap(
   wrap: WrapOption | undefined,
   parentWidth: number,
   parentHeight: number | undefined
-): { breakWord: boolean; on: 'word' | 'char' } {
+): { breakWord: boolean; on: WrapOn } {
   if (wrap === undefined || wrap === false) return { breakWord: false, on: 'char' };
   if (wrap === true) return { breakWord: true, on: 'char' };
-  const { belowWidth, belowHeight, on = 'char' } = wrap;
-  const wTriggers = typeof belowWidth === 'number' && Number.isFinite(belowWidth);
-  const hTriggers = typeof belowHeight === 'number' && Number.isFinite(belowHeight);
-  if (!wTriggers && !hTriggers) return { breakWord: true, on };
-  const wHit = wTriggers && parentWidth <= (belowWidth as number);
-  const hHit =
-    hTriggers && typeof parentHeight === 'number' && parentHeight <= (belowHeight as number);
-  return { breakWord: !!(wHit || hHit), on };
+  const { belowWidth, belowHeight, belowAspect, on = 'char' } = wrap;
+  const isNum = (v: unknown): v is number => typeof v === 'number' && Number.isFinite(v);
+  const hasHeight = typeof parentHeight === 'number' && parentHeight > 0;
+  if (!isNum(belowWidth) && !isNum(belowHeight) && !isNum(belowAspect)) {
+    return { breakWord: true, on };
+  }
+  const wHit = isNum(belowWidth) && parentWidth <= belowWidth;
+  const hHit = isNum(belowHeight) && hasHeight && (parentHeight as number) <= belowHeight;
+  const aHit =
+    isNum(belowAspect) && hasHeight && parentWidth / (parentHeight as number) <= belowAspect;
+  return { breakWord: wHit || hHit || aHit, on };
 }
 
 /**
@@ -172,12 +174,12 @@ export function resolveWrap(
 export function applyWrapStyles(
   element: HTMLElement,
   breakWord: boolean,
-  on: 'word' | 'char',
+  on: WrapOn,
   initial: StyleSnapshot
 ): void {
   element.style.whiteSpace = breakWord ? 'normal' : 'nowrap';
   if (breakWord) {
-    if (on === 'word') {
+    if (on === 'word' || on === 'each-word') {
       element.style.wordBreak = 'keep-all';
       element.style.overflowWrap = 'normal';
     } else {
@@ -198,6 +200,10 @@ export function applyWrapStyles(
     // normal` just set — letting an inherited or class `white-space: nowrap`
     // win and silently disabling wrap. Pin the longhand last.
     element.style.setProperty('text-wrap-mode', 'wrap');
+    // One word per line: shrink-wrap the box to its widest word, so every
+    // space becomes a break. Words stay whole (keep-all / overflow-wrap
+    // normal above), so a long word shrinks the font rather than splitting.
+    if (on === 'each-word') element.style.width = 'min-content';
   } else {
     element.style.wordBreak = 'keep-all';
     element.style.overflowWrap = 'normal';

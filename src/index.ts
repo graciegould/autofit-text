@@ -7,6 +7,7 @@ export type {
   AutofitInfo,
   AutofitTextHandle,
   WrapOption,
+  WrapOn,
   FitMode,
   AlignX,
   AlignY,

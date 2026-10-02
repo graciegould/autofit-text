@@ -19,6 +19,9 @@ export type AlignX = 'left' | 'center' | 'right';
 export type AlignY = 'top' | 'center' | 'bottom';
 
 /** Wrapping behavior: never (`false`), always (`true`), or below a size threshold. */
+/** Where line breaks may occur when wrapping. */
+export type WrapOn = 'word' | 'char' | 'each-word';
+
 export type WrapOption =
   | boolean
   | {
@@ -26,8 +29,19 @@ export type WrapOption =
       belowWidth?: number;
       /** Wrap when the parent's height is ≤ this many px */
       belowHeight?: number;
-      /** Where breaks may occur once wrapping kicks in (default 'char') */
-      on?: 'word' | 'char';
+      /**
+       * Wrap when the parent's aspect ratio (width ÷ height) is ≤ this, e.g.
+       * `1.3` wraps once the box is less than 1.3× as wide as it is tall.
+       * Needs a definite parent height; ignored otherwise.
+       */
+      belowAspect?: number;
+      /**
+       * Where breaks may occur once wrapping kicks in (default 'char').
+       * - `'char'`: anywhere
+       * - `'word'`: only at spaces, as many words per line as fit
+       * - `'each-word'`: every word on its own line
+       */
+      on?: WrapOn;
     };
 
 export interface AutofitInfo {
@@ -46,7 +60,8 @@ export interface UseAutofitTextOptions {
    * Wrapping behavior.
    * - `false` (default): never wrap
    * - `true`: always wrap (break anywhere)
-   * - `{ belowWidth, belowHeight, on }`: wrap when the parent is small enough
+   * - `{ belowWidth, belowHeight, belowAspect, on }`: wrap when the parent is small
+   *   (or narrow) enough
    *   (or always, if no thresholds are given), breaking on the chosen boundary.
    */
   wrap?: WrapOption;

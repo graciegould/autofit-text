@@ -67,11 +67,15 @@ In `fit` mode the hook normally leaves positioning to your CSS; passing either a
 <AutofitText wrap>BREAK ANYWHERE</AutofitText>
 <AutofitText wrap={{ on: 'word' }}>ONLY AT SPACES</AutofitText>
 <AutofitText wrap={{ belowWidth: 400, on: 'word' }}>WRAP ONLY WHEN NARROW</AutofitText>
+<AutofitText mode="fill" wrap={{ belowAspect: 1.3, on: 'each-word' }}>GRACIE GOULD</AutofitText>
 ```
 
 - `false` (default) — single line, fitted
 - `true` — always wrap, breaking anywhere
-- `{ belowWidth?, belowHeight?, on? }` — wrap once the container is at or below a threshold (px); omit both thresholds to always wrap. `on: 'word'` keeps words whole — an unbreakable word shrinks the font rather than splitting.
+- `{ belowWidth?, belowHeight?, belowAspect?, on? }` — wrap once the container is at or below any threshold: `belowWidth` / `belowHeight` in px, `belowAspect` as width ÷ height (e.g. `1.3` wraps once the box is less than 1.3× as wide as tall; needs a definite height). Omit all thresholds to always wrap.
+  - `on: 'char'` (default) breaks anywhere.
+  - `on: 'word'` keeps words whole — an unbreakable word shrinks the font rather than splitting.
+  - `on: 'each-word'` puts every word on its own line.
 
 ## Sizing constraints
 
@@ -86,7 +90,7 @@ In `fit` mode the hook normally leaves positioning to your CSS; passing either a
 | `mode` | `'fit' \| 'fill' \| 'fill-width' \| 'fill-height'` | `'fit'` |
 | `alignX` | `'left' \| 'center' \| 'right'` | `'center'` |
 | `alignY` | `'top' \| 'center' \| 'bottom'` | `'center'` |
-| `wrap` | `boolean \| { belowWidth?, belowHeight?, on? }` | `false` |
+| `wrap` | `boolean \| { belowWidth?, belowHeight?, belowAspect?, on? }` | `false` |
 | `maxWidth` / `maxHeight` | `number \| string` | — |
 | `minFontSize` / `maxFontSize` | `number \| string` | — |
 | `onFit` | `(info: AutofitInfo) => void` | — |

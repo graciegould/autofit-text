@@ -114,6 +114,33 @@ describe('resolveWrap', () => {
     expect(resolveWrap({ belowHeight: 300 }, 800, undefined).breakWord).toBe(false);
   });
 
+  it('belowAspect triggers when width / height is at or below the ratio', () => {
+    expect(resolveWrap({ belowAspect: 1.3 }, 304, 249).breakWord).toBe(true); // 1.22
+    expect(resolveWrap({ belowAspect: 1.3 }, 130, 100).breakWord).toBe(true); // exactly 1.3
+    expect(resolveWrap({ belowAspect: 1.3 }, 360, 249).breakWord).toBe(false); // 1.45
+  });
+
+  it('belowAspect is ignored without a definite height', () => {
+    expect(resolveWrap({ belowAspect: 1.3 }, 100, undefined).breakWord).toBe(false);
+    expect(resolveWrap({ belowAspect: 1.3 }, 100, 0).breakWord).toBe(false);
+  });
+
+  it('belowAspect combines with px thresholds (any trigger wraps)', () => {
+    expect(resolveWrap({ belowAspect: 1.3, belowWidth: 500 }, 400, 100).breakWord).toBe(true);
+    expect(resolveWrap({ belowAspect: 1.3, belowWidth: 300 }, 400, 100).breakWord).toBe(false);
+  });
+
+  it("passes on: 'each-word' through", () => {
+    expect(resolveWrap({ belowAspect: 2, on: 'each-word' }, 100, 100)).toEqual({
+      breakWord: true,
+      on: 'each-word',
+    });
+    expect(resolveWrap({ on: 'each-word' }, 1000, 10)).toEqual({
+      breakWord: true,
+      on: 'each-word',
+    });
+  });
+
   it('threshold form passes the chosen `on` through', () => {
     expect(resolveWrap({ belowWidth: 1000, on: 'word' }, 400, 400)).toEqual({
       breakWord: true,
@@ -126,15 +153,9 @@ describe('resolveWrap', () => {
   });
 
   it('either threshold hitting is enough', () => {
-    expect(
-      resolveWrap({ belowWidth: 500, belowHeight: 500 }, 800, 400).breakWord
-    ).toBe(true);
-    expect(
-      resolveWrap({ belowWidth: 500, belowHeight: 500 }, 400, 800).breakWord
-    ).toBe(true);
-    expect(
-      resolveWrap({ belowWidth: 500, belowHeight: 500 }, 800, 800).breakWord
-    ).toBe(false);
+    expect(resolveWrap({ belowWidth: 500, belowHeight: 500 }, 800, 400).breakWord).toBe(true);
+    expect(resolveWrap({ belowWidth: 500, belowHeight: 500 }, 400, 800).breakWord).toBe(true);
+    expect(resolveWrap({ belowWidth: 500, belowHeight: 500 }, 800, 800).breakWord).toBe(false);
   });
 });
 
@@ -196,12 +217,12 @@ describe('getModeWarnings', () => {
   });
 
   it('warns per-axis for partial stretch modes', () => {
-    expect(
-      getModeWarnings({ stretchX: true, stretchY: false, maxWidth: 100 })[0]
-    ).toContain('fill-width');
-    expect(
-      getModeWarnings({ stretchX: false, stretchY: true, alignY: 'top' })[0]
-    ).toContain('fill-height');
+    expect(getModeWarnings({ stretchX: true, stretchY: false, maxWidth: 100 })[0]).toContain(
+      'fill-width'
+    );
+    expect(getModeWarnings({ stretchX: false, stretchY: true, alignY: 'top' })[0]).toContain(
+      'fill-height'
+    );
   });
 });
 

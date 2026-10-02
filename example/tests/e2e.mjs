@@ -132,6 +132,46 @@ async function run() {
     }, prev);
   }
 
+  // 5c. wrap.belowAspect wraps only when the box is narrow for its height,
+  //     and on: 'each-word' puts every word on its own line.
+  {
+    const cases = [
+      // [label, jsx, width, height, expect(lines)]
+      ['belowAspect: tall box wraps', `wrap={{ belowAspect: 1.3, on: 'word' }}`, 304, 249, (n) => n > 1],
+      ['belowAspect: wide box stays on one line', `wrap={{ belowAspect: 1.3, on: 'word' }}`, 600, 100, (n) => n === 1],
+      ["each-word: one word per line", `wrap={{ on: 'each-word' }}`, 500, 300, (n) => n === 3],
+      ["each-word + fill: one word per line", `mode="fill" wrap={{ on: 'each-word' }}`, 500, 300, (n) => n === 3],
+      ["each-word + belowAspect: wide box stays on one line", `wrap={{ belowAspect: 1.3, on: 'each-word' }}`, 600, 100, (n) => n === 1],
+    ];
+    for (const [label, props, w, h, ok] of cases) {
+      await editor.fill(`<AutofitText ${props}>BUILD GOOD SOFTWARE</AutofitText>`);
+      const prev = await page.locator('.frame').evaluate((el, [w, h]) => {
+        const was = { w: el.style.width, h: el.style.height };
+        el.style.whiteSpace = 'nowrap';
+        el.style.width = `${w}px`;
+        el.style.height = `${h}px`;
+        return was;
+      }, [w, h]);
+      await settle(page);
+      const { lines, inside } = await page.locator('.frame > * > *').first().evaluate((el) => {
+        const range = document.createRange();
+        range.selectNodeContents(el);
+        const tops = new Set([...range.getClientRects()].map((r) => Math.round(r.top)));
+        const a = el.getBoundingClientRect();
+        const c = el.closest('.frame').getBoundingClientRect();
+        const inside =
+          a.left >= c.left - 1 && a.right <= c.right + 1 && a.top >= c.top - 1 && a.bottom <= c.bottom + 1;
+        return { lines: tops.size, inside };
+      });
+      record(label, ok(lines) && inside, `lines=${lines} inside=${inside}`);
+      await page.locator('.frame').evaluate((el, was) => {
+        el.style.whiteSpace = '';
+        el.style.width = was.w;
+        el.style.height = was.h;
+      }, prev);
+    }
+  }
+
   // 6. Resizing the box refits the text
   await presets.filter({ hasText: /^fill$/ }).click();
   await settle(page);
